@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import PageContainer from '../../../ui/page-container'
 import { Tabs, Tab } from '../../../ui/tabs'
+import { MIN_GAS_LIMIT_DEC } from '../../../../pages/send/send.constants'
 import AdvancedTabContent from './advanced-tab-content'
 import BasicTabContent from './basic-tab-content'
 
@@ -104,6 +105,7 @@ export default class GasModalPageContainer extends Component {
         isSpeedUp={isSpeedUp}
         isRetry={isRetry}
         isEthereumNetwork={isEthereumNetwork}
+        minimumGasLimit={MIN_GAS_LIMIT_DEC}
       />
     )
   }

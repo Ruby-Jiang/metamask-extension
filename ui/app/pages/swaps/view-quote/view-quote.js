@@ -131,12 +131,11 @@ export default function ViewQuote () {
     .round(0)
     .toString(16)
 
-  const maxGasLimit = (customMaxGas ||
-    hexMax(
-      (`0x${decimalToHex(usedQuote?.maxGas || 0)}`),
-      usedGasLimitWithMultiplier,
-    )
+  const nonCustomMaxGasLimit = hexMax(
+    (`0x${decimalToHex(usedQuote?.maxGas || 0)}`),
+    usedGasLimitWithMultiplier,
   )
+  const maxGasLimit = customMaxGas || nonCustomMaxGasLimit
 
   const gasTotalInWeiHex = calcGasTotal(maxGasLimit, gasPrice)
 
@@ -394,6 +393,7 @@ export default function ViewQuote () {
     ),
     initialGasPrice: gasPrice,
     initialGasLimit: maxGasLimit,
+    minimumGasLimit: nonCustomMaxGasLimit,
   }))
 
   const tokenApprovalTextComponent = (
