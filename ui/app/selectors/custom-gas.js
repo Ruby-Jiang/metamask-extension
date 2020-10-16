@@ -191,30 +191,17 @@ export function getGasPriceInHexWei (price) {
   return addHexPrefix(priceEstimateToWei(value))
 }
 
-export function getRenderableBasicEstimateData (state, gasLimit, useFastestButtons) {
-  if (getBasicGasEstimateLoadingStatus(state)) {
-    return []
-  }
-
-  const { showFiatInTestnets } = getPreferences(state)
-  const isMainnet = getIsMainnet(state)
-  const showFiat = (isMainnet || Boolean(showFiatInTestnets))
-  const { conversionRate } = state.metamask
-  const currentCurrency = getCurrentCurrency(state)
+export function getRenderableGasButtonData (estimates, gasLimit, showFiat, conversionRate, currentCurrency) {
   const {
-    gas: {
-      basicEstimates: {
-        safeLow,
-        average,
-        fast,
-        safeLowWait,
-        avgWait,
-        fastWait,
-        fastest,
-        fastestWait,
-      },
-    },
-  } = state
+    safeLow,
+    average,
+    fast,
+    safeLowWait,
+    avgWait,
+    fastWait,
+    fastest,
+    fastestWait,
+  } = estimates
 
   const slowEstimatData = {
     gasEstimateType: GAS_ESTIMATE_TYPES.SLOW,
@@ -253,9 +240,32 @@ export function getRenderableBasicEstimateData (state, gasLimit, useFastestButto
     priceInHexWei: getGasPriceInHexWei(fastest),
   }
 
-  return useFastestButtons
-    ? [averageEstimateData, fastEstimatData, fastestEstimateData]
-    : [slowEstimatData, averageEstimateData, fastEstimatData]
+  return {
+    slowEstimatData,
+    averageEstimateData,
+    fastEstimatData,
+    fastestEstimateData,
+  }
+}
+
+export function getRenderableBasicEstimateData (state, gasLimit) {
+  if (getBasicGasEstimateLoadingStatus(state)) {
+    return []
+  }
+
+  const { showFiatInTestnets } = getPreferences(state)
+  const isMainnet = getIsMainnet(state)
+  const showFiat = (isMainnet || Boolean(showFiatInTestnets))
+  const { conversionRate } = state.metamask
+  const currentCurrency = getCurrentCurrency(state)
+
+  const {
+    slowEstimatData,
+    averageEstimateData,
+    fastEstimatData,
+  } = getRenderableGasButtonData(state.gas.basicEstimates, gasLimit, showFiat, conversionRate, currentCurrency)
+
+  return [slowEstimatData, averageEstimateData, fastEstimatData]
 }
 
 export function getRenderableEstimateDataForSmallButtonsFromGWEI (state) {
