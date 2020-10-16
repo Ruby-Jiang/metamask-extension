@@ -127,8 +127,6 @@ describe('gas-modal-page-container container', function () {
         newTotalFiat: '637.41',
         blockTime: 12,
         conversionRate: 50,
-        customGasLimitMessage: '',
-        customTotalSupplement: '',
         customModalGasLimitInHex: 'aaaaaaaa',
         customModalGasPriceInHex: 'ffffffff',
         customGasTotal: 'aaaaaaa955555556',
@@ -148,7 +146,6 @@ describe('gas-modal-page-container container', function () {
         gasEstimatesLoading: false,
         hideBasic: true,
         infoRowProps: {
-          extraInfoRow: { label: 'mockLabel', value: 'mockValue' },
           originalTotalFiat: '637.41',
           originalTotalEth: '12.748189 ETH',
           newTotalFiat: '637.41',
@@ -159,7 +156,6 @@ describe('gas-modal-page-container container', function () {
         insufficientBalance: true,
         isSpeedUp: false,
         isRetry: false,
-        isSwap: false,
         txId: 34,
         isEthereumNetwork: true,
         isMainnet: true,
@@ -170,8 +166,6 @@ describe('gas-modal-page-container container', function () {
           id: 34,
         },
         value: '0x640000000000000',
-        hideAdvancedTimeEstimates: false,
-        noFetchOnMount: false,
       }
       const baseMockOwnProps = { transaction: { id: 34 } }
       const tests = [

@@ -11,7 +11,6 @@ import {
   updateSendAmount,
   setGasTotal,
   updateTransaction,
-  setSwapsTxGasParams,
 } from '../../../../store/actions'
 import {
   setCustomGasPrice,
@@ -68,20 +67,9 @@ import GasModalPageContainer from './gas-modal-page-container.component'
 const mapStateToProps = (state, ownProps) => {
   const { currentNetworkTxList, send } = state.metamask
   const { modalState: { props: modalProps } = {} } = state.appState.modal || {}
-  const {
-    txData = {},
-    isSwap = false,
-    customGasLimitMessage = '',
-    customTotalSupplement = '',
-    extraInfoRow = null,
-    useFastestButtons = false,
-    noFetchOnMount = false,
-    hideAdvancedTimeEstimates = false,
-  } = modalProps || {}
+  const { txData = {} } = modalProps || {}
   const { transaction = {} } = ownProps
-  const selectedTransaction = isSwap
-    ? txData
-    : currentNetworkTxList.find(({ id }) => id === (transaction.id || txData.id))
+  const selectedTransaction = currentNetworkTxList.find(({ id }) => id === (transaction.id || txData.id))
   const buttonDataLoading = getBasicGasEstimateLoadingStatus(state)
   const gasEstimatesLoading = getGasEstimatesLoadingStatus(state)
   const sendToken = getSendToken(state)
@@ -100,12 +88,12 @@ const mapStateToProps = (state, ownProps) => {
   const customModalGasLimitInHex = getCustomGasLimit(state) || currentGasLimit || '0x5208'
   const customGasTotal = calcGasTotal(customModalGasLimitInHex, customModalGasPriceInHex)
 
-  const gasButtonInfo = getRenderableBasicEstimateData(state, customModalGasLimitInHex, useFastestButtons)
+  const gasButtonInfo = getRenderableBasicEstimateData(state, customModalGasLimitInHex)
 
   const currentCurrency = getCurrentCurrency(state)
   const conversionRate = getConversionRate(state)
   const newTotalFiat = sumHexWEIsToRenderableFiat(
-    [value, customGasTotal, customTotalSupplement],
+    [value, customGasTotal],
     currentCurrency,
     conversionRate,
   )
@@ -128,7 +116,7 @@ const mapStateToProps = (state, ownProps) => {
 
   const newTotalEth = maxModeOn && !isSendTokenSet
     ? sumHexWEIsToRenderableEth([balance, '0x0'])
-    : sumHexWEIsToRenderableEth([value, customGasTotal, customTotalSupplement])
+    : sumHexWEIsToRenderableEth([value, customGasTotal])
 
   const sendAmount = maxModeOn && !isSendTokenSet
     ? subtractHexWEIsFromRenderableEth(balance, customGasTotal)
@@ -151,7 +139,6 @@ const mapStateToProps = (state, ownProps) => {
   return {
     hideBasic,
     isConfirm: isConfirm(state),
-    isSwap,
     customModalGasPriceInHex,
     customModalGasLimitInHex,
     customGasPrice,
@@ -176,18 +163,17 @@ const mapStateToProps = (state, ownProps) => {
     },
     infoRowProps: {
       originalTotalFiat: sumHexWEIsToRenderableFiat(
-        [value, customGasTotal, customTotalSupplement],
+        [value, customGasTotal],
         currentCurrency,
         conversionRate,
       ),
       originalTotalEth: sumHexWEIsToRenderableEth(
-        [value, customGasTotal, customTotalSupplement],
+        [value, customGasTotal],
       ),
       newTotalFiat: showFiat ? newTotalFiat : '',
       newTotalEth,
       transactionFee: sumHexWEIsToRenderableEth(['0x0', customGasTotal]),
       sendAmount,
-      extraInfoRow,
     },
     transaction: txData || transaction,
     isSpeedUp: transaction.status === 'submitted',
@@ -200,12 +186,8 @@ const mapStateToProps = (state, ownProps) => {
     sendToken,
     balance,
     tokenBalance: getTokenBalance(state),
-    customGasLimitMessage,
     conversionRate,
     value,
-    customTotalSupplement,
-    noFetchOnMount,
-    hideAdvancedTimeEstimates,
   }
 }
 
@@ -244,9 +226,6 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(updateSendErrors({ amount: null }))
       dispatch(updateSendAmount(calcMaxAmount(maxAmountDataObject)))
     },
-    updateSwapTxGas: (gasLimit, gasPrice) => {
-      dispatch(setSwapsTxGasParams(gasLimit, gasPrice))
-    },
   }
 }
 
@@ -255,7 +234,6 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
     gasPriceButtonGroupProps,
     // eslint-disable-next-line no-shadow
     isConfirm,
-    isSwap,
     txId,
     isSpeedUp,
     isRetry,
@@ -279,7 +257,6 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
     cancelAndClose: dispatchCancelAndClose,
     hideModal: dispatchHideModal,
     setAmountToMax: dispatchSetAmountToMax,
-    updateSwapTxGas: dispatchUpdateSwapTxGas,
     ...otherDispatchProps
   } = dispatchProps
 
@@ -288,10 +265,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
     ...otherDispatchProps,
     ...ownProps,
     onSubmit: (gasLimit, gasPrice) => {
-      if (isSwap) {
-        dispatchUpdateSwapTxGas(gasLimit, gasPrice)
-        dispatchHideModal()
-      } else if (isConfirm) {
+      if (isConfirm) {
         const updatedTx = {
           ...transaction,
           txParams: {
